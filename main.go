@@ -11,15 +11,16 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"log"
 )
 
 func main() {
 	router := gin.Default()
 	InitializeEndpoints(router)
-	go router.Run()
 	db := InitializeDBConnection(os.Getenv("DSN"))
 	CreateUserTable(db)
 	CreateReservationsTable(db)
+	router.Run()
 
 }
 
@@ -34,6 +35,12 @@ func InitializeEndpoints(r *gin.Engine) {
 
 func InitializeDBConnection(dsn string) (db *bun.DB) {
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	err:= sqldb.Ping()
+	if err != nil{
+		log.Println("can`t connect bc of ", err)
+	}else {
+		log.Println("everything`s fine")
+	}
 	db = bun.NewDB(sqldb, pgdialect.New())
 	db.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),
@@ -79,7 +86,6 @@ func CreateUserTable(base *bun.DB) {
 	if err != nil {
 		panic(err)
 	}
-	return
 }
 
 func CreateReservationsTable(base *bun.DB) {
@@ -90,5 +96,4 @@ func CreateReservationsTable(base *bun.DB) {
 	if err != nil {
 		panic(err)
 	}
-	return
 }
