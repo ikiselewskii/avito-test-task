@@ -20,9 +20,5 @@ services:
       - default
     ports:
     - "8080:8080"
-  message-queue:
-    image: rabbitmq:3.11.2-alpine
-    env_file: .env
-    
 volumes:
   data:
