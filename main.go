@@ -12,4 +12,4 @@ func main() {
 	db := database.InitializeDBConnection(utils.ParseEnvToDSN())
 	database.CreateTables(db)
 	router.Run()
-}
+  
