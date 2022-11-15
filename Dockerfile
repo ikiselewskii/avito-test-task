@@ -3,6 +3,6 @@ WORKDIR /code
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download && go mod verify
-COPY *go ./
+COPY . ./
 RUN go build -o /app
 CMD ["/app"]
