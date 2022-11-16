@@ -1,18 +1,24 @@
 package database
 
 import (
-	"database/sql"
+	"github.com/ikiselewskii/avito-test-task/utils"
+	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/stdlib"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
-	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
+	"log"
 )
 
 var DB *bun.DB
-//TODO переписать на pgx-драйвер по совету из статьи avito-tech c медиума
-//TODO установка макс количества соединений из конфигов 
-func InitializeDBConnection(dsn string) *bun.DB{
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+
+func InitializeDBConnection(dsn string) *bun.DB {
+	config, err := pgx.ParseDSN(utils.SerializeDSN())
+	if err != nil {
+		log.Fatal("can`t parse DSN")
+	}
+	config.PreferSimpleProtocol = true
+	sqldb := stdlib.OpenDB(config)
 	DB = bun.NewDB(sqldb, pgdialect.New())
 	DB.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),

@@ -13,17 +13,20 @@ type MyBaseModel struct {
 }
 
 type Customer struct {
-	ID          int `bun:"id,pk" json:"id" binding:"required"`
+	ID          int `bun:"id,pk" json:"id"`
 	MyBaseModel `bun:"table:customers,alias:c"`
-	Balance     int `json:"balance" binding:"required"`
+	Balance     int `json:"balance"`
 }
-type Reservation struct {
-	ID          int `bun:"id,pk,autoincrement"`
-	MyBaseModel `bun:"table:reservations,alias:r"`
-	CustomerID      int
-	Customer        Customer `bun:"rel:belongs-to,join:customer_id=id"`
-	ProductID   string
-	OrderID     string
-	Price       string
-	Status      string
+type Transaction struct {
+	ID          int `bun:"id,pk,autoincrement" json:"-"`
+	MyBaseModel `bun:"table:transactions,alias:t"`
+	FromID      int      `json:"from_id" binding:"required"`
+	From        Customer `bun:"rel:belongs-to,join:from_id=id" json:"-"`
+	ToID        int      `json:"to_id,omitempty"`
+	To          Customer `bun:"rel:belongs-to,join:to_id=id" json:"-"`
+	ProductID   string   `json:"product_id,omitempty"`
+	OrderID     string   `json:"order_id,omitempty"`
+	Amount      int      `json:"amount" binding:"required"`
+	Type        int16    `json:"-"` //0 - purchase goods, 1 - replenish user balance, 2 - user to user transfer
+	Status      string   `json:"-"`
 }
