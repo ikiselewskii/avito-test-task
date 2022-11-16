@@ -12,16 +12,16 @@ type MyBaseModel struct {
 	UpdatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 }
 
-type User struct {
-	ID          int `bun:"id,pk"`
-	MyBaseModel `bun:"table:users,alias:u"`
-	Balance     int
+type Customer struct {
+	ID          int `bun:"id,pk" json:"id" binding:"required"`
+	MyBaseModel `bun:"table:customers,alias:c"`
+	Balance     int `json:"balance" binding:"required"`
 }
 type Reservation struct {
 	ID          int `bun:"id,pk,autoincrement"`
 	MyBaseModel `bun:"table:reservations,alias:r"`
-	UserID      int
-	User        User `bun:"rel:belongs-to,join:user_id=id"`
+	CustomerID      int
+	Customer        Customer `bun:"rel:belongs-to,join:customer_id=id"`
 	ProductID   string
 	OrderID     string
 	Price       string
