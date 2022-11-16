@@ -8,12 +8,14 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
-func InitializeDBConnection(dsn string) (db *bun.DB) {
+var DB *bun.DB
+
+func InitializeDBConnection(dsn string) *bun.DB{
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
-	db = bun.NewDB(sqldb, pgdialect.New())
-	db.AddQueryHook(bundebug.NewQueryHook(
+	DB = bun.NewDB(sqldb, pgdialect.New())
+	DB.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),
 		bundebug.FromEnv("BUNDEBUG"),
 	))
-	return
+	return DB
 }
