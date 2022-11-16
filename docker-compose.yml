@@ -3,7 +3,7 @@ services:
   database:
     image: postgres:15-alpine
     restart: always
-    hostname: postgres
+    hostname: $POSTGRES_HOSTNAME
     env_file:
       - .env
     ports:

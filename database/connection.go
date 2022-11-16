@@ -9,7 +9,8 @@ import (
 )
 
 var DB *bun.DB
-
+//TODO переписать на pgx-драйвер по совету из статьи avito-tech c медиума
+//TODO установка макс количества соединений из конфигов 
 func InitializeDBConnection(dsn string) *bun.DB{
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 	DB = bun.NewDB(sqldb, pgdialect.New())
