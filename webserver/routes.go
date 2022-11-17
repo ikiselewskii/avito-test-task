@@ -2,11 +2,13 @@ package webserver
 
 import (
 	"database/sql"
+	"log"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/ikiselewskii/avito-test-task/database"
 	"github.com/ikiselewskii/avito-test-task/models"
-	"log"
-	"net/http"
+	//"github.com/ikiselewskii/avito-test-task/utils"
 )
 
 func InitializeEndpoints(r *gin.Engine) {
@@ -49,13 +51,14 @@ func reserve(ctx *gin.Context) {
 		return
 	}
 	json.Type = 0
+	log.Println(json)
 	err = database.Reserve(json, ctx)
 	if err == sql.ErrNoRows {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "not enough money, pal"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "no user  with such id found"})
 		return
 	}
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "something went wrong"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "insufficient balance"})
 		return
 	}
 	ctx.JSON(http.StatusAccepted, gin.H{"message": "purchase reserved succesfully"})

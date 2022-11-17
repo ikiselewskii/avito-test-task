@@ -13,12 +13,16 @@ import (
 var DB *bun.DB
 
 func InitializeDBConnection(dsn string) *bun.DB {
-	config, err := pgx.ParseDSN(utils.SerializeDSN())
+	config, err := pgx.ParseConnectionString(utils.SerializeDSN())
 	if err != nil {
 		log.Fatal("can`t parse DSN")
 	}
 	config.PreferSimpleProtocol = true
 	sqldb := stdlib.OpenDB(config)
+	err = sqldb.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
 	DB = bun.NewDB(sqldb, pgdialect.New())
 	DB.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),

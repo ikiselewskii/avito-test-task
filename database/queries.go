@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/ikiselewskii/avito-test-task/models"
+	"github.com/ikiselewskii/avito-test-task/utils"
 )
 
 func CreateTables() {
@@ -60,26 +61,36 @@ func Reserve(tr models.Transaction, ctx context.Context) error {
 		tx.Rollback()
 		return err
 	}
-
-	count, err := tx.NewSelect().
-		Model((*models.Customer)(nil)).
+	var customers []models.Customer
+	err = tx.NewSelect().
+		Model(&customers).
+		ColumnExpr("balance").
 		Where("id = ?", tr.FromID).
-		Where("balance >= ?", tr.Amount).
-		Count(ctx)
-	if count == 0 {
-		log.Println("Not enough money on balance ", sql.ErrNoRows)
+		For("UPDATE").
+		Scan(ctx, &customers)
+	if len(customers) == 0 {
+		log.Println("user doesn`t exist")
 		tx.Rollback()
 		return sql.ErrNoRows
 	}
+	customer := customers[0]
+	log.Println(customer)
+	if customer.Balance < tr.Amount {
+		log.Printf("inssuficient balance on account id:%d", customer.ID)
+		tx.Rollback()
+		return &utils.InsufficientBalanceError{}
+	}
 	if err != nil {
+		tx.Rollback()
 		log.Println("Something went wrong ", err)
 		return err
 	}
 	_, err = tx.NewUpdate().
-		Model((*models.Customer)(nil)).
-		Set("balance = balance - ?", tr.Amount).
+		Model(&customer).
+		Set("balance = ?", customer.Balance-tr.Amount).
 		Where("id = ?", tr.FromID).
 		Exec(ctx)
+
 	if err != nil {
 		log.Println("Failed to reduce balance ", err)
 		tx.Rollback()
@@ -94,5 +105,6 @@ func Reserve(tr models.Transaction, ctx context.Context) error {
 		tx.Rollback()
 		return err
 	}
+	tx.Commit()
 	return err
 }
