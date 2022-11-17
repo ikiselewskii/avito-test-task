@@ -9,7 +9,7 @@ import (
 func main() {
 	router := webserver.CreateRouterEngine()
 	webserver.InitializeEndpoints(router)
-	database.InitializeDBConnection(utils.ParseEnvToDSN())
+	database.InitializeDBConnection(utils.SerializeDSN())
 	database.CreateTables()
 	router.Run()
 }
