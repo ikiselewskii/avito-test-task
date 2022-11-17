@@ -18,6 +18,7 @@ func InitializeEndpoints(r *gin.Engine) {
 			"message": "pong",
 		})
 	})
+	r.GET("/get_balance", getBalance)
 	r.POST("/add_money", addMoney)
 	r.POST("/reserve", reserve)
 }
@@ -41,6 +42,22 @@ func addMoney(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, gin.H{"message": "payment accepted"})
 
 }
+func getBalance(ctx *gin.Context) {
+	var json models.Customer
+	err := ctx.BindJSON(&json)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "wrong input, try again"})
+		return
+	}
+	balance, err := database.GetBalance(json, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "wrong input, try again"})
+		return
+	}
+	ctx.JSON(http.StatusAccepted, gin.H{"balance": balance})
+	return
+}
+
 
 func reserve(ctx *gin.Context) {
 	var json models.Transaction
