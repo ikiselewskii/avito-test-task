@@ -21,6 +21,7 @@ func InitializeEndpoints(r *gin.Engine) {
 	r.GET("/get_balance", getBalance)
 	r.POST("/add_money", addMoney)
 	r.POST("/reserve", reserve)
+	r.POST("/approve", approve)
 }
 
 func rootRoute(ctx *gin.Context) {
@@ -42,6 +43,7 @@ func addMoney(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, gin.H{"message": "payment accepted"})
 
 }
+
 func getBalance(ctx *gin.Context) {
 	var json models.Customer
 	err := ctx.BindJSON(&json)
@@ -57,7 +59,6 @@ func getBalance(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, gin.H{"balance": balance})
 	return
 }
-
 
 func reserve(ctx *gin.Context) {
 	var json models.Transaction
@@ -80,4 +81,20 @@ func reserve(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusAccepted, gin.H{"message": "purchase reserved succesfully"})
 
+}
+ 
+func approve(ctx *gin.Context){
+	var json models.Transaction
+	err := ctx.BindJSON(&json)
+	if err != nil{
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "incorrect input"})
+		return
+	}
+	err = database.Approve(json, ctx)
+	if err != nil{
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to update transaction status"})
+		return
+	}
+	ctx.JSON(http.StatusAccepted, gin.H{"message" : "transaction status updated succcesfully"})
+	return
 }
