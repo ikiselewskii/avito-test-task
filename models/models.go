@@ -24,8 +24,8 @@ type Transaction struct {
 	From        Customer `bun:"rel:belongs-to,join:from_id=id" json:"-"`
 	ToID        int      `json:"to_id,omitempty"`
 	To          Customer `bun:"rel:belongs-to,join:to_id=id" json:"-"`
-	ProductID   string   `json:"product_id,omitempty"`
-	OrderID     string   `json:"order_id,omitempty"`
+	ProductID   int   `json:"product_id,omitempty"`
+	OrderID     int   `json:"order_id,omitempty"`
 	Amount      int      `json:"amount" binding:"required"`
 	Type        int16    `json:"-"` //0 - purchase goods, 1 - replenish user balance, 2 - user to user transfer
 	Status      string   `json:"-"`

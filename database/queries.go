@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log"
-
 	"github.com/ikiselewskii/avito-test-task/models"
 	"github.com/ikiselewskii/avito-test-task/utils"
 )
@@ -18,6 +17,7 @@ func CreateTables() {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func createUsersTable() error {
@@ -42,6 +42,15 @@ func createReservationsTable() error {
 	return err
 }
 
+func createIndexes() error {
+	_, err := DB.NewCreateIndex().
+				Model((*models.Transaction)(nil)).
+				IfNotExists().
+				Include().
+				TableExpr("order_id").Exec(context.Background())
+	return err
+}
+
 func AddMoney(to models.Customer, ctx context.Context) error {
 	_, err := DB.NewInsert().
 		Model(&to).
@@ -52,6 +61,19 @@ func AddMoney(to models.Customer, ctx context.Context) error {
 		log.Println(err)
 	}
 	return err
+}
+
+func GetBalance(usr models.Customer, ctx context.Context) (int, error){
+	err := DB.NewSelect().
+	Model(&usr).
+	ColumnExpr("balance").
+	Where("id = ?", usr.ID).
+	Scan(ctx, &usr)
+	if err != nil {
+		log.Println(err, " no such user")
+		return 0, err
+	}
+	return usr.Balance, err
 }
 
 func Reserve(tr models.Transaction, ctx context.Context) error {
