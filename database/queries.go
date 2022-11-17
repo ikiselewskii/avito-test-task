@@ -8,48 +8,42 @@ import (
 	"github.com/ikiselewskii/avito-test-task/utils"
 )
 
-func CreateTables() {
-	err := createUsersTable()
+func CreateTables(ctx context.Context) {
+	err := createUsersTable(ctx)
 	if err != nil {
 		panic(err)
 	}
-	err = createReservationsTable()
+	err = createReservationsTable(ctx)
 	if err != nil {
 		panic(err)
 	}
 
 }
 
-func createUsersTable() error {
+func createUsersTable(ctx context.Context) error {
 	_, err := DB.NewCreateTable().
 		Model((*models.Customer)(nil)).
 		IfNotExists().
-		Exec(context.Background())
+		Exec(ctx)
 	if err != nil {
 		log.Println("Failed to create Users Table ", err)
 	}
 	return err
 }
 
-func createReservationsTable() error {
+func createReservationsTable(ctx context.Context) error {
 	_, err := DB.NewCreateTable().
 		Model((*models.Transaction)(nil)).
 		IfNotExists().
-		Exec(context.Background())
+		Exec(ctx)
 	if err != nil {
 		log.Println("Failed to create ReservationsTable ", err)
 	}
 	return err
 }
 
-func createIndexes() error {
-	_, err := DB.NewCreateIndex().
-				Model((*models.Transaction)(nil)).
-				IfNotExists().
-				Include().
-				TableExpr("order_id").Exec(context.Background())
-	return err
-}
+
+
 
 func AddMoney(to models.Customer, ctx context.Context) error {
 	_, err := DB.NewInsert().
@@ -128,5 +122,24 @@ func Reserve(tr models.Transaction, ctx context.Context) error {
 		return err
 	}
 	tx.Commit()
+	return err
+}
+
+func Approve(tr models.Transaction, ctx context.Context) error{
+	tx, err := DB.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		log.Println("Failed to begin transaction ", err)
+		tx.Rollback()
+		return err
+	}
+	
+	_, err = tx.NewUpdate().
+				Model(&tr).
+					Where("order_id = ?", tr.OrderID).
+						Set("status = ?", "accepted").Exec(ctx)
+	if err != nil{
+		log.Println("unable to approve transaction due to ", err)
+		return err
+	}
 	return err
 }
